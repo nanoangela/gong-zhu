@@ -1,0 +1,1672 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>經典拱豬 (Gong Zhu) - iPad 典藏旗艦版</title>
+<style>
+  :root {
+    --table-green: radial-gradient(circle at center, #15803d 0%, #14532d 55%, #052e16 100%);
+    --gold: #f59e0b;
+    --gold-bright: #fbbf24;
+    --gold-glow: rgba(245, 158, 11, 0.75);
+    --card-w: 84px;
+    --card-h: 120px;
+    --radius: 10px;
+  }
+
+  @media (min-width: 820px) and (min-height: 600px) {
+    :root {
+      --card-w: 92px;
+      --card-h: 132px;
+      --radius: 12px;
+    }
+  }
+
+  @media (max-width: 650px) {
+    :root {
+      --card-w: 64px;
+      --card-h: 92px;
+      --radius: 8px;
+    }
+  }
+
+  * {
+    box-sizing: border-box;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    margin: 0;
+    padding: 0;
+  }
+
+  html, body {
+    width: 100%;
+    height: 100%;
+    height: 100dvh;
+    background: #02200d;
+    color: #ffffff;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang TC", "Noto Sans TC", sans-serif;
+    overflow: hidden;
+    position: fixed;
+  }
+
+  #game-root {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  /* Top Navigation */
+  header {
+    height: 48px;
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(12px);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+    z-index: 60;
+    flex-shrink: 0;
+  }
+
+  .nav-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .game-title {
+    font-size: 18px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    color: #f8fafc;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .pill-badge {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: #111827;
+    font-size: 12px;
+    font-weight: 800;
+    padding: 2px 10px;
+    border-radius: 9999px;
+  }
+
+  .nav-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .btn-nav {
+    background: rgba(255, 255, 255, 0.14);
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    color: #ffffff;
+    border-radius: 8px;
+    padding: 5px 12px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .btn-nav:active {
+    background: rgba(255, 255, 255, 0.28);
+    transform: scale(0.96);
+  }
+
+  /* Main Table Felt Arena */
+  #table-arena {
+    flex: 1;
+    position: relative;
+    background: var(--table-green);
+    box-shadow: inset 0 0 120px rgba(0, 0, 0, 0.85);
+    overflow: hidden;
+  }
+
+  /* Player Seat Component */
+  .seat-container {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    z-index: 20;
+    pointer-events: none;
+  }
+  .seat-container > * { pointer-events: auto; }
+
+  .seat-info-pill {
+    background: rgba(15, 23, 42, 0.88);
+    border: 1.5px solid rgba(255, 255, 255, 0.25);
+    border-radius: 20px;
+    padding: 4px 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    white-space: nowrap;
+  }
+
+  .seat-container.is-turn .seat-info-pill {
+    border-color: var(--gold-bright);
+    box-shadow: 0 0 22px var(--gold-glow);
+    transform: scale(1.08);
+  }
+
+  .seat-avatar {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: #475569;
+    font-size: 12px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+  }
+
+  .seat-name {
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  .seat-score {
+    color: var(--gold);
+    font-weight: 800;
+    font-size: 14px;
+    min-width: 32px;
+    text-align: right;
+  }
+
+  .seat-exposed-tags {
+    display: flex;
+    gap: 3px;
+    margin: 3px 0;
+    min-height: 18px;
+  }
+
+  .tag-pill {
+    font-size: 10px;
+    font-weight: 900;
+    padding: 1px 6px;
+    border-radius: 4px;
+    color: #fff;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+  }
+  .tag-p { background: #dc2626; }
+  .tag-s { background: #059669; }
+  .tag-t { background: #7c3aed; }
+  .tag-h { background: #e11d48; }
+
+  /* -------------------------------------------------------------
+     4-SEAT POSITIONING (True Circular Board Layout)
+     ------------------------------------------------------------- */
+  /* North (Top) */
+  #seat-north {
+    top: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+  #seat-north .opp-cards-row {
+    margin-top: 6px;
+    display: flex;
+    justify-content: center;
+  }
+
+  /* West (Left) */
+  #seat-west {
+    top: 48%;
+    left: 12px;
+    transform: translateY(-50%);
+    align-items: flex-start;
+  }
+  #seat-west .opp-cards-col {
+    margin-top: 6px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* East (Right) */
+  #seat-east {
+    top: 48%;
+    right: 12px;
+    transform: translateY(-50%);
+    align-items: flex-end;
+  }
+  #seat-east .opp-cards-col {
+    margin-top: 6px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* South (Player at Bottom) */
+  #seat-south {
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 1080px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    z-index: 40;
+  }
+
+  .south-header-bar {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    margin-bottom: 8px;
+  }
+
+  #btn-play-selected {
+    position: absolute;
+    right: 30px;
+    bottom: 0;
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: #111827;
+    font-size: 16px;
+    font-weight: 900;
+    letter-spacing: 1px;
+    padding: 8px 30px;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    box-shadow: 0 4px 18px rgba(245, 158, 11, 0.7);
+    display: none;
+    animation: bouncePlay 1.2s infinite alternate;
+  }
+  @keyframes bouncePlay {
+    0% { transform: scale(1); }
+    100% { transform: scale(1.08); box-shadow: 0 6px 24px rgba(245, 158, 11, 0.95); }
+  }
+
+  /* -------------------------------------------------------------
+     CARD VISUALS: FULL SIZE EQUALITY
+     ------------------------------------------------------------- */
+  .card-item {
+    width: var(--card-w);
+    height: var(--card-h);
+    border-radius: var(--radius);
+    background: #ffffff;
+    box-shadow: -2px 4px 12px rgba(0, 0, 0, 0.4);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 6px 8px;
+    cursor: pointer;
+    user-select: none;
+    flex-shrink: 0;
+    border: 1.5px solid rgba(0,0,0,0.15);
+    transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s, filter 0.2s;
+  }
+
+  /* Suit colors */
+  .card-item.hearts, .card-item.diamonds { color: #dc2626; }
+  .card-item.spades, .card-item.clubs { color: #111827; }
+
+  /* Corner numbers */
+  .corner-idx {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    line-height: 1;
+    font-weight: 900;
+  }
+  .corner-idx.top { align-self: flex-start; }
+  .corner-idx.bottom { align-self: flex-end; transform: rotate(180deg); }
+
+  .idx-rank { font-size: calc(var(--card-w) * 0.25); }
+  .idx-suit { font-size: calc(var(--card-w) * 0.22); margin-top: 1px; }
+
+  /* Center Large Suit Icon */
+  .card-center-suit {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: calc(var(--card-w) * 0.45);
+    opacity: 0.92;
+    pointer-events: none;
+  }
+
+  /* Special Tag Badge on Face */
+  .card-special-badge {
+    position: absolute;
+    bottom: calc(var(--card-h) * 0.16);
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 11px;
+    font-weight: 900;
+    color: #ffffff;
+    padding: 1px 6px;
+    border-radius: 4px;
+    white-space: nowrap;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.6);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    pointer-events: none;
+  }
+  .badge-pig-c { background: #dc2626; }
+  .badge-sheep-c { background: #059669; }
+  .badge-trans-c { background: #7c3aed; }
+  .badge-heart-pts { background: #e11d48; }
+
+  /* -------------------------------------------------------------
+     CARD BACK: RAINBOW 4-POINTED STAR (SAME FULL SIZE)
+     ------------------------------------------------------------- */
+  .card-back-full {
+    width: var(--card-w);
+    height: var(--card-h);
+    border-radius: var(--radius);
+    background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 50%, #7dd3fc 100%);
+    border: 2px solid #ffffff;
+    box-shadow: -2px 3px 10px rgba(0,0,0,0.35), inset 0 0 8px rgba(0,0,0,0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    flex-shrink: 0;
+  }
+  .card-back-full svg {
+    width: 68%;
+    height: 68%;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.22));
+  }
+
+  /* -------------------------------------------------------------
+     OPPONENT STACKING OVERLAPS (FULL CARDS NEATLY LAYERED)
+     ------------------------------------------------------------- */
+  /* North: horizontal cascade */
+  .north-card-wrapper {
+    margin-left: calc(var(--card-w) * -0.68);
+    transition: transform 0.2s;
+  }
+  .north-card-wrapper:first-child { margin-left: 0; }
+
+  /* West: vertical cascade */
+  .west-card-wrapper {
+    margin-top: calc(var(--card-h) * -0.74);
+    transition: transform 0.2s;
+  }
+  .west-card-wrapper:first-child { margin-top: 0; }
+
+  /* East: vertical cascade */
+  .east-card-wrapper {
+    margin-top: calc(var(--card-h) * -0.74);
+    transition: transform 0.2s;
+  }
+  .east-card-wrapper:first-child { margin-top: 0; }
+
+  /* South (Human Player) Hand Stack */
+  #south-hand-row {
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    width: 100%;
+    min-height: calc(var(--card-h) + 30px);
+    padding: 0 10px;
+  }
+
+  .south-card-wrapper {
+    margin-left: calc(var(--card-w) * -0.56);
+    position: relative;
+    transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .south-card-wrapper:first-child { margin-left: 0; }
+
+  /* Selection Lift */
+  .south-card-wrapper.is-selected {
+    transform: translateY(-28px);
+    z-index: 50 !important;
+  }
+  .south-card-wrapper.is-selected .card-item {
+    border: 2.5px solid var(--gold-bright);
+    box-shadow: 0 12px 28px var(--gold-glow);
+  }
+
+  .south-card-wrapper.is-disabled .card-item {
+    filter: brightness(0.55) grayscale(0.5);
+    cursor: not-allowed;
+  }
+
+  /* -------------------------------------------------------------
+     CENTER TRICK ARENA (定格展示舞台)
+     ------------------------------------------------------------- */
+  #center-trick-board {
+    position: absolute;
+    top: 48%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: calc(var(--card-w) * 3.4);
+    height: calc(var(--card-h) * 2.3);
+    pointer-events: none;
+    z-index: 25;
+  }
+
+  .trick-spot {
+    position: absolute;
+    width: var(--card-w);
+    height: var(--card-h);
+    transform: translate(-50%, -50%);
+    transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+    opacity: 0;
+  }
+
+  .trick-spot.active { opacity: 1; }
+
+  #spot-north { top: 22%; left: 50%; }
+  #spot-south { top: 78%; left: 50%; }
+  #spot-west  { top: 50%; left: 22%; }
+  #spot-east  { top: 50%; left: 78%; }
+
+  .spot-player-tag {
+    position: absolute;
+    top: -18px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 11px;
+    font-weight: 800;
+    color: #e2e8f0;
+    background: rgba(0,0,0,0.7);
+    padding: 1px 8px;
+    border-radius: 10px;
+    white-space: nowrap;
+    border: 1px solid rgba(255,255,255,0.15);
+  }
+
+  /* Freeze Highlight Winner */
+  .trick-spot.winner-highlight .card-item {
+    border: 3px solid var(--gold-bright) !important;
+    box-shadow: 0 0 28px var(--gold-glow), 0 8px 24px rgba(0,0,0,0.7) !important;
+    transform: scale(1.12);
+    z-index: 35;
+  }
+
+  /* Center Announcement Banner */
+  #center-banner {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(15, 23, 42, 0.94);
+    border: 1.5px solid var(--gold);
+    color: #ffffff;
+    padding: 8px 26px;
+    border-radius: 24px;
+    font-size: 15px;
+    font-weight: 800;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.7);
+    z-index: 45;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s, transform 0.25s;
+  }
+  #center-banner.show {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.05);
+  }
+
+  /* Modals */
+  .modal-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(3, 7, 18, 0.85);
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s;
+    padding: 16px;
+  }
+  .modal-overlay.open { opacity: 1; pointer-events: auto; }
+
+  .modal-box {
+    background: #0f172a;
+    border: 1.5px solid rgba(255, 255, 255, 0.2);
+    border-radius: 18px;
+    padding: 24px;
+    width: 100%;
+    max-width: 520px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.7);
+    color: #f8fafc;
+    text-align: center;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+
+  .modal-box h2 {
+    color: var(--gold);
+    font-size: 20px;
+    font-weight: 800;
+    margin-bottom: 12px;
+  }
+  .modal-box p, .modal-box li {
+    font-size: 14px;
+    line-height: 1.6;
+    color: #cbd5e1;
+    text-align: left;
+  }
+
+  .expose-options-flex {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    margin: 18px 0;
+  }
+  .expose-choice-btn {
+    background: #1e293b;
+    border: 2px solid #334155;
+    border-radius: 10px;
+    padding: 10px 16px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #ffffff;
+    transition: all 0.2s;
+  }
+  .expose-choice-btn.checked {
+    border-color: var(--gold);
+    background: #1e3a5f;
+    box-shadow: 0 0 12px rgba(245, 158, 11, 0.5);
+  }
+
+  .btn-confirm-action {
+    background: linear-gradient(135deg, #0284c7, #0369a1);
+    color: #ffffff;
+    font-size: 16px;
+    font-weight: 800;
+    padding: 12px 30px;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    width: 100%;
+  }
+
+  .stats-tbl {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0;
+    font-size: 13px;
+  }
+  .stats-tbl th, .stats-tbl td {
+    padding: 8px 6px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    text-align: center;
+  }
+  .stats-tbl th { background: rgba(255,255,255,0.06); color: #94a3b8; }
+  .stats-tbl .hl { color: var(--gold); font-weight: 800; }
+
+  /* Toast Notification */
+  .toast-notice {
+    position: fixed;
+    top: 60px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(15, 23, 42, 0.96);
+    border: 1.5px solid var(--gold);
+    color: #ffffff;
+    padding: 8px 22px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 800;
+    box-shadow: 0 4px 18px rgba(0,0,0,0.6);
+    z-index: 200;
+    pointer-events: none;
+    animation: toastFade 2.2s ease forwards;
+  }
+  @keyframes toastFade {
+    0% { opacity: 0; transform: translate(-50%, -10px); }
+    15% { opacity: 1; transform: translate(-50%, 0); }
+    85% { opacity: 1; transform: translate(-50%, 0); }
+    100% { opacity: 0; transform: translate(-50%, -10px); }
+  }
+</style>
+</head>
+<body>
+
+<div id="game-root">
+  <header>
+    <div class="nav-left">
+      <div class="game-title">🎴 經典拱豬</div>
+      <span class="pill-badge" id="round-indicator">第 1 / 4 局</span>
+    </div>
+    <div class="nav-right">
+      <button class="btn-nav" id="btn-diff">難度: 困難</button>
+      <button class="btn-nav" id="btn-stats">📊 戰績</button>
+      <button class="btn-nav" id="btn-sound">🔊 音效</button>
+      <button class="btn-nav" id="btn-rules">ℹ️ 規則</button>
+    </div>
+  </header>
+
+  <div id="table-arena">
+    <!-- North Seat (Computer North) -->
+    <div class="seat-container" id="seat-north">
+      <div class="seat-info-pill">
+        <div class="seat-avatar">北</div>
+        <span class="seat-name">電腦 (北)</span>
+        <span class="seat-score" id="score-north">0</span>
+      </div>
+      <div class="seat-exposed-tags" id="tags-north"></div>
+      <!-- Opponent Full Cards Row -->
+      <div class="opp-cards-row" id="hand-north"></div>
+    </div>
+
+    <!-- West Seat (Computer West) -->
+    <div class="seat-container" id="seat-west">
+      <div class="seat-info-pill">
+        <div class="seat-avatar">西</div>
+        <span class="seat-name">電腦 (西)</span>
+        <span class="seat-score" id="score-west">0</span>
+      </div>
+      <div class="seat-exposed-tags" id="tags-west"></div>
+      <!-- Opponent Full Cards Column -->
+      <div class="opp-cards-col" id="hand-west"></div>
+    </div>
+
+    <!-- East Seat (Computer East) -->
+    <div class="seat-container" id="seat-east">
+      <div class="seat-info-pill">
+        <div class="seat-avatar">東</div>
+        <span class="seat-name">電腦 (東)</span>
+        <span class="seat-score" id="score-east">0</span>
+      </div>
+      <div class="seat-exposed-tags" id="tags-east"></div>
+      <!-- Opponent Full Cards Column -->
+      <div class="opp-cards-col" id="hand-east"></div>
+    </div>
+
+    <!-- Center Trick Arena (定格展示舞台) -->
+    <div id="center-trick-board">
+      <div class="trick-spot" id="spot-north">
+        <div class="spot-player-tag">北</div>
+        <div class="spot-inner"></div>
+      </div>
+      <div class="trick-spot" id="spot-west">
+        <div class="spot-player-tag">西</div>
+        <div class="spot-inner"></div>
+      </div>
+      <div class="trick-spot" id="spot-east">
+        <div class="spot-player-tag">東</div>
+        <div class="spot-inner"></div>
+      </div>
+      <div class="trick-spot" id="spot-south">
+        <div class="spot-player-tag">我</div>
+        <div class="spot-inner"></div>
+      </div>
+    </div>
+
+    <!-- Central Notice Banner -->
+    <div id="center-banner">輪到您出牌</div>
+
+    <!-- South Seat (Human Player) -->
+    <div class="seat-container" id="seat-south">
+      <div class="south-header-bar">
+        <div class="seat-info-pill" style="border-color:#38bdf8;">
+          <div class="seat-avatar" style="background:#0284c7;">我</div>
+          <span class="seat-name">玩家 (南)</span>
+          <span class="seat-score" id="score-south">0</span>
+        </div>
+        <button id="btn-play-selected">打出此牌 ➔</button>
+      </div>
+      <div class="seat-exposed-tags" id="tags-south"></div>
+
+      <!-- Human Hand Row -->
+      <div id="south-hand-row"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Exposing Phase -->
+<div class="modal-overlay" id="modal-expose">
+  <div class="modal-box">
+    <h2>🎴 開局亮牌 (賣牌加倍)</h2>
+    <p>持有 ♠Q(豬)、♦J(羊)、♣10(變壓器)、♥A 的玩家可在此階段選擇亮牌，亮牌後該牌分值翻倍。</p>
+    <div class="expose-options-flex" id="expose-choices-box"></div>
+    <button class="btn-confirm-action" id="btn-done-expose">確認亮牌並開始</button>
+  </div>
+</div>
+
+<!-- Modal: Round Settlement -->
+<div class="modal-overlay" id="modal-settle">
+  <div class="modal-box">
+    <h2 id="settle-headline">本局結算</h2>
+    <div id="settle-table-wrap"></div>
+    <button class="btn-confirm-action" id="btn-next-round">進入下一局</button>
+  </div>
+</div>
+
+<!-- Modal: Rules -->
+<div class="modal-overlay" id="modal-rules">
+  <div class="modal-box">
+    <h2>經典拱豬規則說明</h2>
+    <p><strong>1. 分牌價值：</strong></p>
+    <ul>
+      <li>♠Q (豬)：-100 分 (亮牌變 -200)</li>
+      <li>♦J (羊)：+100 分 (亮牌變 +200)</li>
+      <li>♣10 (變壓器)：得分 ×2；單收此牌算 +50 分</li>
+      <li>♥ (紅心計分)：♥2~♥10 依點數扣分（-2至-10分），♥J (-20)、♥Q (-30)、♥K (-40)、♥A (-50)。全套 13 張共 -194 分。</li>
+    </ul>
+    <br>
+    <p><strong>2. 全紅與【豬羊變色】：</strong></p>
+    <ul>
+      <li><strong>全紅</strong>：單一玩家收齊全部 13 張紅心，所有紅心負分全轉正分（+194 分，亮心則 +388 分）。</li>
+      <li><strong>豬羊變色</strong>：當場上有人達成全紅時，觸發全場正負極性大逆轉：
+        <ul>
+          <li>全紅者持有的 <strong>♠Q (豬) 由負轉正</strong>（-100 變 +100 分，亮豬變 +200 分）。</li>
+          <li>其餘單獨吃到 <strong>♦J (羊) 的玩家由正轉負（+100 變 -100 分，亮羊變 -200 分）</strong>！</li>
+        </ul>
+      </li>
+      <li><strong>豬羊滿圈 (全收大滿貫)</strong>：單一玩家同時獨攬 13 張紅心 + ♠Q + ♦J + ♣10，直接獨得 +1000 分！</li>
+    </ul>
+    <br>
+    <button class="btn-confirm-action" onclick="closeModal('modal-rules')">關閉</button>
+  </div>
+</div>
+
+<!-- Modal: Lifetime Stats -->
+<div class="modal-overlay" id="modal-stats">
+  <div class="modal-box">
+    <h2>🏆 巡迴賽累計戰績</h2>
+    <div id="stats-data-box"></div>
+    <br>
+    <button class="btn-confirm-action" onclick="closeModal('modal-stats')">關閉</button>
+  </div>
+</div>
+
+<script>
+/* =========================================================
+   1. SOUND ENGINE (Web Audio API)
+   ========================================================= */
+class AudioSystem {
+  constructor() {
+    this.ctx = null;
+    this.enabled = true;
+  }
+  init() {
+    if (!this.ctx) {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (AC) this.ctx = new AC();
+    }
+  }
+  beep(freq, type, dur, vol = 0.1) {
+    if (!this.enabled) return;
+    try {
+      this.init();
+      if (!this.ctx) return;
+      if (this.ctx.state === 'suspended') this.ctx.resume();
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = type;
+      osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+      gain.gain.setValueAtTime(vol, this.ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + dur);
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+      osc.start();
+      osc.stop(this.ctx.currentTime + dur);
+    } catch(e) {}
+  }
+  deal() { this.beep(550, 'triangle', 0.08, 0.05); }
+  playCard() { this.beep(320, 'sine', 0.13, 0.12); }
+  trickWin() {
+    this.beep(523, 'triangle', 0.18, 0.14);
+    setTimeout(() => this.beep(659, 'triangle', 0.24, 0.14), 100);
+  }
+  pig() { this.beep(135, 'sawtooth', 0.4, 0.2); }
+  sheep() {
+    this.beep(880, 'sine', 0.18, 0.15);
+    setTimeout(() => this.beep(1046, 'sine', 0.24, 0.15), 110);
+  }
+  expose() {
+    this.beep(440, 'square', 0.12, 0.08);
+    setTimeout(() => this.beep(880, 'square', 0.2, 0.08), 80);
+  }
+}
+const sound = new AudioSystem();
+
+/* =========================================================
+   2. DATA & RAINBOW 4-POINTED STAR SVG
+   ========================================================= */
+const SUITS = ['spades', 'hearts', 'clubs', 'diamonds'];
+const SUIT_SYMBOLS = { spades: '♠', hearts: '♥', clubs: '♣', diamonds: '♦' };
+const RANKS = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14];
+const RANK_NAMES = { 11: 'J', 12: 'Q', 13: 'K', 14: 'A' };
+const PLAYERS = ['south', 'west', 'north', 'east'];
+const PLAYER_NAMES = { south: '玩家 (南)', west: '電腦 (西)', north: '電腦 (北)', east: '電腦 (東)' };
+
+/* Rainbow Four-Pointed Star SVG matching attachment exactly */
+const RAINBOW_STAR_SVG = `
+<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="rainbowGrad3" x1="12%" y1="10%" x2="88%" y2="90%">
+      <stop offset="0%" stop-color="#ef4444" />
+      <stop offset="26%" stop-color="#f97316" />
+      <stop offset="48%" stop-color="#eab308" />
+      <stop offset="70%" stop-color="#22c55e" />
+      <stop offset="100%" stop-color="#3b82f6" />
+    </linearGradient>
+  </defs>
+  <path d="M 100,10 
+           C 100,68 132,100 190,100 
+           C 132,100 100,132 100,190 
+           C 100,132 68,100 10,100 
+           C 68,100 100,68 100,10 Z" 
+        fill="url(#rainbowGrad3)" />
+</svg>
+`;
+
+/* =========================================================
+   3. GAME STATE
+   ========================================================= */
+const state = {
+  round: 1,
+  totalRounds: 4,
+  difficulty: 'hard',
+  dealerIdx: 0,
+  hands: { south: [], west: [], north: [], east: [] },
+  captured: { south: [], west: [], north: [], east: [] },
+  exposed: { pig: null, sheep: null, trans: null, hearts: null },
+  trick: {},
+  currentTurn: 'south',
+  leadSuit: null,
+  tricksCount: 0,
+  selectedCard: null,
+  history: [],
+  scores: { south: 0, west: 0, north: 0, east: 0 },
+  isFrozen: false,
+  stats: { games: 0, wins: 0, pigs: 0, sheeps: 0, slams: 0 }
+};
+
+try {
+  const saved = localStorage.getItem('gongzhu_v3_stats');
+  if (saved) Object.assign(state.stats, JSON.parse(saved));
+} catch(e) {}
+
+function saveStats() {
+  try { localStorage.setItem('gongzhu_v3_stats', JSON.stringify(state.stats)); } catch(e) {}
+}
+
+/* =========================================================
+   4. DECK & DEAL
+   ========================================================= */
+function createDeck() {
+  const deck = [];
+  for (const suit of SUITS) {
+    for (const rank of RANKS) {
+      deck.push({
+        id: `${suit}_${rank}`,
+        suit,
+        rank,
+        name: RANK_NAMES[rank] || String(rank),
+        symbol: SUIT_SYMBOLS[suit]
+      });
+    }
+  }
+  return deck;
+}
+
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function sortHand(hand) {
+  const sOrder = { spades: 0, hearts: 1, clubs: 2, diamonds: 3 };
+  return hand.sort((a, b) => {
+    if (sOrder[a.suit] !== sOrder[b.suit]) return sOrder[a.suit] - sOrder[b.suit];
+    return a.rank - b.rank;
+  });
+}
+
+function startRound() {
+  const deck = shuffle(createDeck());
+  PLAYERS.forEach(p => {
+    state.hands[p] = [];
+    state.captured[p] = [];
+  });
+  state.exposed = { pig: null, sheep: null, trans: null, hearts: null };
+  state.trick = {};
+  state.leadSuit = null;
+  state.tricksCount = 0;
+  state.selectedCard = null;
+  state.history = [];
+  state.isFrozen = false;
+
+  for (let i = 0; i < 52; i++) {
+    state.hands[PLAYERS[i % 4]].push(deck[i]);
+  }
+  PLAYERS.forEach(p => sortHand(state.hands[p]));
+
+  sound.deal();
+  updateUI();
+  openExposeModal();
+}
+
+/* =========================================================
+   5. EXPOSING / SELLING (亮牌階段)
+   ========================================================= */
+function openExposeModal() {
+  const southHand = state.hands.south;
+  const specials = southHand.filter(c => 
+    (c.suit === 'spades' && c.rank === 12) ||
+    (c.suit === 'diamonds' && c.rank === 11) ||
+    (c.suit === 'clubs' && c.rank === 10) ||
+    (c.suit === 'hearts' && c.rank === 14)
+  );
+
+  const container = document.getElementById('expose-choices-box');
+  container.innerHTML = '';
+
+  if (specials.length === 0) {
+    container.innerHTML = '<p style="color:#94a3b8; text-align:center; width:100%;">手牌中無可亮牌的特殊牌 (♠Q, ♦J, ♣10, ♥A)</p>';
+  } else {
+    specials.forEach(c => {
+      let desc = `${c.symbol} ${c.name} `;
+      if (c.suit === 'spades') desc += '亮豬 (-200)';
+      if (c.suit === 'diamonds') desc += '亮羊 (+200)';
+      if (c.suit === 'clubs') desc += '亮變壓器 (x4)';
+      if (c.suit === 'hearts') desc += '亮心 (全套紅心加倍)';
+
+      const btn = document.createElement('div');
+      btn.className = 'expose-choice-btn';
+      btn.dataset.id = c.id;
+      btn.innerHTML = `<span>⬜</span> <span>${desc}</span>`;
+      btn.onclick = () => {
+        btn.classList.toggle('checked');
+        btn.querySelector('span').textContent = btn.classList.contains('checked') ? '✅' : '⬜';
+      };
+      container.appendChild(btn);
+    });
+  }
+
+  // AI 亮牌判斷（需有極度壓倒性優勢且出牌前明確廣播）
+  ['west', 'north', 'east'].forEach(bot => {
+    const h = state.hands[bot];
+    const sLen = h.filter(c => c.suit === 'spades').length;
+    const dLen = h.filter(c => c.suit === 'diamonds').length;
+    const cLen = h.filter(c => c.suit === 'clubs').length;
+
+    h.forEach(c => {
+      // 只有在手牌極長極強時（例如 6 張方塊帶 A）才亮羊
+      if (c.suit === 'diamonds' && c.rank === 11 && dLen >= 6 && h.some(x => x.suit === 'diamonds' && x.rank === 14)) {
+        state.exposed.sheep = bot;
+      }
+      // 電腦極少亮豬，避免無謂自爆
+      if (c.suit === 'spades' && c.rank === 12 && sLen >= 7) {
+        state.exposed.pig = bot;
+      }
+      // 電腦只有在手牌 6 張梅花以上帶 A/K 才亮變壓器
+      if (c.suit === 'clubs' && c.rank === 10 && cLen >= 6 && h.some(x => x.suit === 'clubs' && x.rank === 14)) {
+        state.exposed.trans = bot;
+      }
+    });
+  });
+
+  openModal('modal-expose');
+}
+
+function finishExpose() {
+  const chosen = document.querySelectorAll('.expose-choice-btn.checked');
+  chosen.forEach(btn => {
+    const id = btn.dataset.id;
+    if (id === 'spades_12') state.exposed.pig = 'south';
+    if (id === 'diamonds_11') state.exposed.sheep = 'south';
+    if (id === 'clubs_10') state.exposed.trans = 'south';
+    if (id === 'hearts_14') state.exposed.hearts = 'south';
+  });
+
+  closeModal('modal-expose');
+  sound.expose();
+  showToast('亮牌完成，牌局開始！');
+
+  state.currentTurn = PLAYERS[state.dealerIdx % 4];
+  updateUI();
+  nextTurn();
+}
+
+/* =========================================================
+   6. ROUND & TRICK TURN LOOP
+   ========================================================= */
+function nextTurn() {
+  if (state.isFrozen) return;
+  updateUI();
+
+  const p = state.currentTurn;
+  if (p === 'south') {
+    showBanner('輪到您出牌');
+  } else {
+    showBanner(`${PLAYER_NAMES[p]} 思考中...`);
+    setTimeout(() => {
+      aiPlay(p);
+    }, 550);
+  }
+}
+
+function getLegalHand(player) {
+  const h = state.hands[player];
+  if (!state.leadSuit) return h;
+  const matched = h.filter(c => c.suit === state.leadSuit);
+  return matched.length > 0 ? matched : h;
+}
+
+function executePlay(player, card) {
+  const h = state.hands[player];
+  const idx = h.findIndex(c => c.id === card.id);
+  if (idx !== -1) h.splice(idx, 1);
+
+  if (!state.leadSuit) state.leadSuit = card.suit;
+
+  state.trick[player] = card;
+  state.history.push({ player, card });
+  sound.playCard();
+
+  state.selectedCard = null;
+  document.getElementById('btn-play-selected').style.display = 'none';
+
+  updateUI();
+
+  if (Object.keys(state.trick).length === 4) {
+    state.isFrozen = true;
+    setTimeout(settleTrickWithFreeze, 500);
+  } else {
+    const curr = PLAYERS.indexOf(player);
+    state.currentTurn = PLAYERS[(curr + 1) % 4];
+    setTimeout(nextTurn, 220);
+  }
+}
+
+/* FREEZE SETTLEMENT (定格展示 1.8 秒) */
+function settleTrickWithFreeze() {
+  const lead = state.leadSuit;
+  let winner = null;
+  let maxRank = -1;
+
+  PLAYERS.forEach(p => {
+    const c = state.trick[p];
+    if (c.suit === lead && c.rank > maxRank) {
+      maxRank = c.rank;
+      winner = p;
+    }
+  });
+
+  const winSpot = document.getElementById(`spot-${winner}`);
+  if (winSpot) winSpot.classList.add('winner-highlight');
+
+  sound.trickWin();
+
+  const cardsWon = Object.values(state.trick);
+  state.captured[winner].push(...cardsWon);
+
+  const hasPig = cardsWon.some(c => c.suit === 'spades' && c.rank === 12);
+  const hasSheep = cardsWon.some(c => c.suit === 'diamonds' && c.rank === 11);
+
+  let msg = `👑 ${PLAYER_NAMES[winner]} 贏得此輪！`;
+  if (hasPig) {
+    sound.pig();
+    msg = `🐷 ${PLAYER_NAMES[winner]} 吃到黑桃Q (豬)！`;
+  } else if (hasSheep) {
+    sound.sheep();
+    msg = `🐑 ${PLAYER_NAMES[winner]} 撿到方塊J (羊)！`;
+  }
+  showBanner(msg);
+
+  setTimeout(() => {
+    if (winSpot) winSpot.classList.remove('winner-highlight');
+    state.trick = {};
+    state.leadSuit = null;
+    state.tricksCount++;
+    state.currentTurn = winner;
+    state.isFrozen = false;
+
+    if (state.tricksCount === 13) {
+      setTimeout(endRoundSettlement, 600);
+    } else {
+      updateUI();
+      nextTurn();
+    }
+  }, 1800);
+}
+
+/* =========================================================
+   7. AI LOGIC (NORMAL & HARD)
+   ========================================================= */
+function aiPlay(bot) {
+  const legals = getLegalHand(bot);
+  if (legals.length === 1) {
+    executePlay(bot, legals[0]);
+    return;
+  }
+
+  let pick = null;
+  const isLead = !state.leadSuit;
+
+  if (state.difficulty === 'normal') {
+    pick = aiNormalStrategy(bot, legals, isLead);
+  } else {
+    pick = aiHardStrategy(bot, legals, isLead);
+  }
+
+  executePlay(bot, pick || legals[0]);
+}
+
+function aiNormalStrategy(bot, legals, isLead) {
+  if (isLead) {
+    const s = [...legals].sort((a,b) => a.rank - b.rank);
+    return s.find(c => !(c.suit === 'spades' && c.rank >= 12)) || s[0];
+  }
+  if (legals[0].suit !== state.leadSuit) {
+    const pig = legals.find(c => c.suit === 'spades' && c.rank === 12);
+    if (pig) return pig;
+    const highSpade = legals.filter(c => c.suit === 'spades' && c.rank >= 13);
+    if (highSpade.length > 0) return highSpade[0];
+    const hearts = legals.filter(c => c.suit === 'hearts').sort((a,b) => b.rank - a.rank);
+    if (hearts.length > 0) return hearts[0];
+    return legals.sort((a,b) => b.rank - a.rank)[0];
+  }
+  const onTable = Object.values(state.trick).filter(c => c.suit === state.leadSuit);
+  const maxTable = Math.max(...onTable.map(c => c.rank));
+  const under = legals.filter(c => c.rank < maxTable);
+  if (under.length > 0) return under.sort((a,b) => b.rank - a.rank)[0];
+  return legals.sort((a,b) => a.rank - b.rank)[0];
+}
+
+function aiHardStrategy(bot, legals, isLead) {
+  const onTable = Object.values(state.trick);
+  const pigOut = state.history.some(h => h.card.suit === 'spades' && h.card.rank === 12);
+  const sheepOnTable = onTable.some(c => c.suit === 'diamonds' && c.rank === 11);
+  const pigOnTable = onTable.some(c => c.suit === 'spades' && c.rank === 12);
+
+  if (isLead) {
+    const hasSheep = legals.some(c => c.suit === 'diamonds' && c.rank === 11);
+    const hasDiamondA = legals.some(c => c.suit === 'diamonds' && c.rank === 14);
+    if (hasSheep && hasDiamondA) return legals.find(c => c.suit === 'diamonds' && c.rank === 14);
+
+    const safeLow = legals.filter(c => (c.suit === 'clubs' || c.suit === 'diamonds') && c.rank <= 8);
+    if (safeLow.length > 0) return safeLow.sort((a,b) => a.rank - b.rank)[0];
+
+    if (!pigOut) {
+      const safe = legals.filter(c => !(c.suit === 'spades' && c.rank >= 12));
+      if (safe.length > 0) return safe.sort((a,b) => a.rank - b.rank)[0];
+    }
+    return legals.sort((a,b) => a.rank - b.rank)[0];
+  }
+
+  if (legals[0].suit !== state.leadSuit) {
+    const pig = legals.find(c => c.suit === 'spades' && c.rank === 12);
+    if (pig) return pig;
+
+    if (!pigOut) {
+      const spadeAK = legals.filter(c => c.suit === 'spades' && c.rank >= 13);
+      if (spadeAK.length > 0) return spadeAK.sort((a,b) => b.rank - a.rank)[0];
+    }
+
+    const highHearts = legals.filter(c => c.suit === 'hearts').sort((a,b) => b.rank - a.rank);
+    if (highHearts.length > 0) return highHearts[0];
+
+    const sheep = legals.find(c => c.suit === 'diamonds' && c.rank === 11);
+    if (sheep) return sheep;
+
+    return legals.sort((a,b) => b.rank - a.rank)[0];
+  }
+
+  const leadSuitCards = onTable.filter(c => c.suit === state.leadSuit);
+  const maxTable = Math.max(...leadSuitCards.map(c => c.rank));
+
+  if (sheepOnTable) {
+    const win = legals.filter(c => c.rank > maxTable);
+    if (win.length > 0) return win.sort((a,b) => b.rank - a.rank)[0];
+  }
+
+  if (pigOnTable || state.leadSuit === 'spades') {
+    const safeUnder = legals.filter(c => c.rank < maxTable);
+    if (safeUnder.length > 0) return safeUnder.sort((a,b) => b.rank - a.rank)[0];
+  }
+
+  const safeUnder = legals.filter(c => c.rank < maxTable);
+  if (safeUnder.length > 0) return safeUnder.sort((a,b) => b.rank - a.rank)[0];
+
+  return legals.sort((a,b) => a.rank - b.rank)[0];
+}
+
+/* =========================================================
+   8. SCORING & TOURNAMENT FLOW
+   ========================================================= */
+function calculateScores() {
+  const roundScores = { south: 0, west: 0, north: 0, east: 0 };
+  const details = {};
+
+  // 第一階段：先計算各家原始收到的卡牌分值與紅心張數
+  let allHeartsWinner = null;
+  const rawData = {};
+
+  PLAYERS.forEach(p => {
+    const captured = state.captured[p];
+    let pig = 0, sheep = 0, heartScore = 0, heartCount = 0;
+    let hasTrans = false, transMul = 1;
+
+    captured.forEach(c => {
+      if (c.suit === 'spades' && c.rank === 12) {
+        pig = state.exposed.pig ? -200 : -100;
+      }
+      if (c.suit === 'diamonds' && c.rank === 11) {
+        sheep = state.exposed.sheep ? 200 : 100;
+      }
+      if (c.suit === 'clubs' && c.rank === 10) {
+        hasTrans = true;
+        transMul = state.exposed.trans ? 4 : 2;
+      }
+      if (c.suit === 'hearts') {
+        heartCount++;
+        let val = (c.rank <= 10) ? -c.rank : (c.rank === 11 ? -20 : (c.rank === 12 ? -30 : (c.rank === 13 ? -40 : -50)));
+        if (state.exposed.hearts) val *= 2;
+        heartScore += val;
+      }
+    });
+
+    if (heartCount === 13) {
+      allHeartsWinner = p;
+    }
+
+    rawData[p] = { pig, sheep, heartScore, heartCount, hasTrans, transMul };
+  });
+
+  // 第二階段：判定【豬羊變色】與【豬羊滿圈】
+  PLAYERS.forEach(p => {
+    let { pig, sheep, heartScore, heartCount, hasTrans, transMul } = rawData[p];
+    let isPigFlipped = false;
+    let isSheepFlipped = false;
+
+    // 當場上有人達成「全紅」（13張紅心全拿）時觸發全場「豬羊變色」：
+    if (allHeartsWinner) {
+      if (p === allHeartsWinner) {
+        // 1. 全紅玩家：紅心全轉正分
+        heartScore = Math.abs(heartScore);
+        // 若全紅玩家同時抓到豬，豬也翻轉為正分（-100 變 +100）
+        if (pig < 0) {
+          pig = Math.abs(pig);
+          isPigFlipped = true;
+        }
+        // 若全紅玩家抓到羊，羊依然保持正分（只有全收/大滿貫或全紅自留時為正）
+      } else {
+        // 2. 其餘單獨吃到方塊J（羊）的玩家：羊變色！由正轉負（+100 變成 -100，亮牌則 -200）
+        if (sheep > 0) {
+          sheep = -sheep;
+          isSheepFlipped = true;
+        }
+      }
+    }
+
+    // 豬羊滿圈（全收大滿貫）：單人收齊全部13張紅心 + 豬 + 羊 + 變壓器
+    const isSlam = (p === allHeartsWinner && pig > 0 && sheep > 0 && hasTrans);
+    let baseScore = pig + sheep + heartScore;
+    let total = 0;
+
+    if (isSlam) {
+      total = 1000;
+      if (p === 'south') state.stats.slams++;
+    } else {
+      if (hasTrans) {
+        if (baseScore === 0) {
+          total = state.exposed.trans ? 100 : 50;
+        } else {
+          total = baseScore * transMul;
+        }
+      } else {
+        total = baseScore;
+      }
+    }
+
+    roundScores[p] = total;
+    details[p] = { pig, sheep, heartScore, hasTrans, transMul, isSlam, isPigFlipped, isSheepFlipped, baseScore, total };
+
+    if (p === 'south') {
+      if (pig !== 0) state.stats.pigs++;
+      if (sheep > 0) state.stats.sheeps++;
+    }
+  });
+
+  return { roundScores, details };
+}
+
+function endRoundSettlement() {
+  const { roundScores, details } = calculateScores();
+  PLAYERS.forEach(p => state.scores[p] += roundScores[p]);
+
+  const isTourneyEnd = state.round >= state.totalRounds;
+  let html = `
+    <table class="stats-tbl">
+      <thead>
+        <tr>
+          <th>玩家</th><th>豬 / 羊</th><th>紅心</th><th>變壓器</th><th>本局</th><th>累計</th>
+        </tr>
+      </thead>
+      <tbody>
+  `;
+
+  PLAYERS.forEach(p => {
+    const d = details[p];
+    let pigStr = '-';
+    if (d.pig > 0) {
+      pigStr = `<span style="color:#10b981; font-weight:800;">+${d.pig} (變色)</span>`;
+    } else if (d.pig < 0) {
+      pigStr = `<span style="color:#ef4444">${d.pig}</span>`;
+    }
+    let sheepStr = '-';
+    if (d.sheep > 0) {
+      sheepStr = `<span style="color:#10b981">+${d.sheep}</span>`;
+    } else if (d.sheep < 0) {
+      sheepStr = `<span style="color:#ef4444; font-weight:800;">${d.sheep} (變色)</span>`;
+    }
+    const heartStr = d.heartScore !== 0 ? `${d.heartScore}` : '-';
+    const transStr = d.hasTrans ? `x${d.transMul}` : '-';
+    const slamBadge = d.isSlam ? '<br><span style="color:#f59e0b; font-size:10px;">🌟 豬羊滿圈</span>' : '';
+
+    html += `
+      <tr>
+        <td class="${p==='south'?'hl':''}">${PLAYER_NAMES[p]}</td>
+        <td>${pigStr} / ${sheepStr}</td>
+        <td>${heartStr}</td>
+        <td>${transStr}</td>
+        <td class="${d.total>=0?'hl':''}">
+          ${d.hasTrans && d.baseScore !== 0 ? `<span style="font-size:11px;color:#94a3b8;">(${d.baseScore>0?'+':''}${d.baseScore} × ${d.transMul}) = </span>` : ''}
+          ${d.total > 0 ? '+' : ''}${d.total}${slamBadge}
+        </td>
+        <td style="font-weight:900;">${state.scores[p]}</td>
+      </tr>
+    `;
+  });
+  html += `</tbody></table>`;
+
+  document.getElementById('settle-headline').textContent = isTourneyEnd ? '🏆 巡迴賽總結算' : `第 ${state.round} 局結算`;
+  document.getElementById('settle-table-wrap').innerHTML = html;
+
+  const btnNext = document.getElementById('btn-next-round');
+  if (isTourneyEnd) {
+    btnNext.textContent = '再戰一輪 (重新開局)';
+    btnNext.onclick = restartTourney;
+    state.stats.games++;
+    if (state.scores.south === Math.max(...Object.values(state.scores))) state.stats.wins++;
+    saveStats();
+  } else {
+    btnNext.textContent = `進入第 ${state.round + 1} 局`;
+    btnNext.onclick = nextRound;
+  }
+
+  openModal('modal-settle');
+}
+
+function nextRound() {
+  closeModal('modal-settle');
+  state.round++;
+  state.dealerIdx++;
+  startRound();
+}
+
+function restartTourney() {
+  closeModal('modal-settle');
+  state.round = 1;
+  state.dealerIdx = 0;
+  PLAYERS.forEach(p => state.scores[p] = 0);
+  startRound();
+}
+
+/* =========================================================
+   9. CARD RENDERING & UI SYNC
+   ========================================================= */
+function getSpecialBadge(card) {
+  if (card.suit === 'spades' && card.rank === 12) return `<div class="card-special-badge badge-pig-c">豬 -100</div>`;
+  if (card.suit === 'diamonds' && card.rank === 11) return `<div class="card-special-badge badge-sheep-c">羊 +100</div>`;
+  if (card.suit === 'clubs' && card.rank === 10) return `<div class="card-special-badge badge-trans-c">變壓器</div>`;
+  if (card.suit === 'hearts') {
+    let pts = card.rank <= 10 ? -card.rank : (card.rank === 11 ? -20 : (card.rank === 12 ? -30 : (card.rank === 13 ? -40 : -50)));
+    return `<div class="card-special-badge badge-heart-pts">${pts}</div>`;
+  }
+  return '';
+}
+
+function renderCardFaceHTML(card) {
+  return `
+    <div class="card-item ${card.suit}" data-id="${card.id}">
+      <div class="corner-idx top">
+        <div class="idx-rank">${card.name}</div>
+        <div class="idx-suit">${card.symbol}</div>
+      </div>
+      <div class="card-center-suit">${card.symbol}</div>
+      ${getSpecialBadge(card)}
+      <div class="corner-idx bottom">
+        <div class="idx-rank">${card.name}</div>
+        <div class="idx-suit">${card.symbol}</div>
+      </div>
+    </div>
+  `;
+}
+
+function renderCardBackHTML() {
+  return `
+    <div class="card-back-full">
+      ${RAINBOW_STAR_SVG}
+    </div>
+  `;
+}
+
+function updateUI() {
+  document.getElementById('round-indicator').textContent = `第 ${state.round} / ${state.totalRounds} 局`;
+
+  // Update Player Seats (Active State & Scores)
+  PLAYERS.forEach(p => {
+    const seat = document.getElementById(`seat-${p}`);
+    if (seat) seat.classList.toggle('is-turn', state.currentTurn === p);
+    const sc = document.getElementById(`score-${p}`);
+    if (sc) sc.textContent = state.scores[p];
+
+    const tagContainer = document.getElementById(`tags-${p}`);
+    if (tagContainer) {
+      let t = '';
+      if (state.exposed.pig === p) t += `<span class="tag-pill tag-p">亮豬</span>`;
+      if (state.exposed.sheep === p) t += `<span class="tag-pill tag-s">亮羊</span>`;
+      if (state.exposed.trans === p) t += `<span class="tag-pill tag-t">亮變</span>`;
+      if (state.exposed.hearts === p) t += `<span class="tag-pill tag-h">亮心</span>`;
+      tagContainer.innerHTML = t;
+    }
+  });
+
+  // Render Full-Size Opponent Cards with Rainbow Star Back!
+  // North
+  const northBox = document.getElementById('hand-north');
+  if (northBox) {
+    const count = state.hands.north.length;
+    let html = '';
+    for (let i = 0; i < count; i++) {
+      html += `<div class="north-card-wrapper" style="z-index:${i+1};">${renderCardBackHTML()}</div>`;
+    }
+    northBox.innerHTML = html;
+  }
+
+  // West
+  const westBox = document.getElementById('hand-west');
+  if (westBox) {
+    const count = state.hands.west.length;
+    let html = '';
+    for (let i = 0; i < count; i++) {
+      html += `<div class="west-card-wrapper" style="z-index:${i+1};">${renderCardBackHTML()}</div>`;
+    }
+    westBox.innerHTML = html;
+  }
+
+  // East
+  const eastBox = document.getElementById('hand-east');
+  if (eastBox) {
+    const count = state.hands.east.length;
+    let html = '';
+    for (let i = 0; i < count; i++) {
+      html += `<div class="east-card-wrapper" style="z-index:${i+1};">${renderCardBackHTML()}</div>`;
+    }
+    eastBox.innerHTML = html;
+  }
+
+  // Center Trick Spots
+  PLAYERS.forEach(pos => {
+    const spot = document.getElementById(`spot-${pos}`);
+    if (!spot) return;
+    const inner = spot.querySelector('.spot-inner');
+    const card = state.trick[pos];
+    if (card) {
+      inner.innerHTML = renderCardFaceHTML(card);
+      spot.classList.add('active');
+    } else {
+      inner.innerHTML = '';
+      spot.classList.remove('active');
+    }
+  });
+
+  // Render Human South Hand
+  renderSouthHand();
+}
+
+function renderSouthHand() {
+  const container = document.getElementById('south-hand-row');
+  container.innerHTML = '';
+
+  const hand = state.hands.south;
+  const legals = state.currentTurn === 'south' && !state.isFrozen ? getLegalHand('south') : [];
+  const legalIds = new Set(legals.map(c => c.id));
+
+  hand.forEach((card, i) => {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'south-card-wrapper';
+    wrapper.style.zIndex = i + 1;
+    wrapper.innerHTML = renderCardFaceHTML(card);
+
+    if (state.currentTurn === 'south' && !state.isFrozen && !legalIds.has(card.id)) {
+      wrapper.classList.add('is-disabled');
+    }
+
+    if (state.selectedCard && state.selectedCard.id === card.id) {
+      wrapper.classList.add('is-selected');
+    }
+
+    wrapper.onclick = (e) => {
+      e.stopPropagation();
+      handleCardTap(card);
+    };
+
+    container.appendChild(wrapper);
+  });
+}
+
+function handleCardTap(card) {
+  if (state.currentTurn !== 'south' || state.isFrozen) return;
+
+  const legals = getLegalHand('south');
+  if (!legals.some(c => c.id === card.id)) {
+    showToast('必須跟出相同花色！');
+    return;
+  }
+
+  if (state.selectedCard && state.selectedCard.id === card.id) {
+    executePlay('south', card);
+  } else {
+    state.selectedCard = card;
+    sound.deal();
+    document.getElementById('btn-play-selected').style.display = 'block';
+    renderSouthHand();
+  }
+}
+
+document.getElementById('btn-play-selected').onclick = () => {
+  if (state.selectedCard && state.currentTurn === 'south' && !state.isFrozen) {
+    executePlay('south', state.selectedCard);
+  }
+};
+
+function showBanner(txt) {
+  const b = document.getElementById('center-banner');
+  b.textContent = txt;
+  b.classList.add('show');
+}
+
+function showToast(msg) {
+  const old = document.querySelector('.toast-notice');
+  if (old) old.remove();
+  const t = document.createElement('div');
+  t.className = 'toast-notice';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 2200);
+}
+
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+/* Event Bindings */
+document.getElementById('btn-done-expose').onclick = finishExpose;
+
+document.getElementById('btn-diff').onclick = () => {
+  state.difficulty = state.difficulty === 'hard' ? 'normal' : 'hard';
+  document.getElementById('btn-diff').textContent = `難度: ${state.difficulty === 'hard' ? '困難' : '普通'}`;
+  showToast(`已切換 AI 難度：${state.difficulty === 'hard' ? '困難' : '普通'}`);
+};
+
+document.getElementById('btn-sound').onclick = () => {
+  sound.enabled = !sound.enabled;
+  document.getElementById('btn-sound').textContent = sound.enabled ? '🔊 音效' : '🔇 靜音';
+  showToast(sound.enabled ? '音效已開啟' : '已靜音');
+};
+
+document.getElementById('btn-rules').onclick = () => openModal('modal-rules');
+
+document.getElementById('btn-stats').onclick = () => {
+  const box = document.getElementById('stats-data-box');
+  box.innerHTML = `
+    <p><strong>目前巡迴賽分數（第 ${state.round} 局）：</strong></p>
+    <table class="stats-tbl">
+      <tr><th>玩家</th><th>累計分數</th></tr>
+      <tr><td class="hl">玩家 (南)</td><td class="hl">${state.scores.south}</td></tr>
+      <tr><td>電腦 (西)</td><td>${state.scores.west}</td></tr>
+      <tr><td>電腦 (北)</td><td>${state.scores.north}</td></tr>
+      <tr><td>電腦 (東)</td><td>${state.scores.east}</td></tr>
+    </table>
+    <br>
+    <p><strong>歷史累計紀錄：</strong></p>
+    <ul style="padding-left:18px; line-height:1.8;">
+      <li>已完成巡迴賽數：${state.stats.games} 場</li>
+      <li>奪冠勝場數：${state.stats.wins} 場</li>
+      <li>吃到豬 (♠Q) 次數：${state.stats.pigs} 次</li>
+      <li>撿到羊 (♦J) 次數：${state.stats.sheeps} 次</li>
+      <li>達成豬羊滿圈 (全收)：${state.stats.slams} 次</li>
+    </ul>
+  `;
+  openModal('modal-stats');
+};
+
+// Start Round
+window.addEventListener('DOMContentLoaded', () => {
+  startRound();
+});
+</script>
+</body>
+</html>
