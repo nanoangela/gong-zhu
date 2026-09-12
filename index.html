@@ -188,26 +188,7 @@
     text-align: right;
   }
 
-  .seat-exposed-tags {
-    display: flex;
-    gap: 3px;
-    margin: 3px 0;
-    min-height: 18px;
-  }
-
-  .tag-pill {
-    font-size: 10px;
-    font-weight: 900;
-    padding: 1px 6px;
-    border-radius: 4px;
-    color: #fff;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.4);
-  }
-  .tag-p { background: #dc2626; }
-  .tag-s { background: #059669; }
-  .tag-t { background: #7c3aed; }
-  .tag-h { background: #e11d48; }
-
+  
   /* -------------------------------------------------------------
      4-SEAT POSITIONING (True Circular Board Layout)
      ------------------------------------------------------------- */
@@ -564,33 +545,7 @@
     text-align: left;
   }
 
-  .expose-options-flex {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    justify-content: center;
-    margin: 18px 0;
-  }
-  .expose-choice-btn {
-    background: #1e293b;
-    border: 2px solid #334155;
-    border-radius: 10px;
-    padding: 10px 16px;
-    cursor: pointer;
-    font-size: 14px;
-    font-weight: 800;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    color: #ffffff;
-    transition: all 0.2s;
-  }
-  .expose-choice-btn.checked {
-    border-color: var(--gold);
-    background: #1e3a5f;
-    box-shadow: 0 0 12px rgba(245, 158, 11, 0.5);
-  }
-
+  
   .btn-confirm-action {
     background: linear-gradient(135deg, #0284c7, #0369a1);
     color: #ffffff;
@@ -667,8 +622,7 @@
         <span class="seat-name">電腦 (北)</span>
         <span class="seat-score" id="score-north">0</span>
       </div>
-      <div class="seat-exposed-tags" id="tags-north"></div>
-      <!-- Opponent Full Cards Row -->
+            <!-- Opponent Full Cards Row -->
       <div class="opp-cards-row" id="hand-north"></div>
     </div>
 
@@ -679,8 +633,7 @@
         <span class="seat-name">電腦 (西)</span>
         <span class="seat-score" id="score-west">0</span>
       </div>
-      <div class="seat-exposed-tags" id="tags-west"></div>
-      <!-- Opponent Full Cards Column -->
+            <!-- Opponent Full Cards Column -->
       <div class="opp-cards-col" id="hand-west"></div>
     </div>
 
@@ -691,8 +644,7 @@
         <span class="seat-name">電腦 (東)</span>
         <span class="seat-score" id="score-east">0</span>
       </div>
-      <div class="seat-exposed-tags" id="tags-east"></div>
-      <!-- Opponent Full Cards Column -->
+            <!-- Opponent Full Cards Column -->
       <div class="opp-cards-col" id="hand-east"></div>
     </div>
 
@@ -729,21 +681,10 @@
         </div>
         <button id="btn-play-selected">打出此牌 ➔</button>
       </div>
-      <div class="seat-exposed-tags" id="tags-south"></div>
-
+      
       <!-- Human Hand Row -->
       <div id="south-hand-row"></div>
     </div>
-  </div>
-</div>
-
-<!-- Modal: Exposing Phase -->
-<div class="modal-overlay" id="modal-expose">
-  <div class="modal-box">
-    <h2>🎴 開局亮牌 (賣牌加倍)</h2>
-    <p>持有 ♠Q(豬)、♦J(羊)、♣10(變壓器)、♥A 的玩家可在此階段選擇亮牌，亮牌後該牌分值翻倍。</p>
-    <div class="expose-options-flex" id="expose-choices-box"></div>
-    <button class="btn-confirm-action" id="btn-done-expose">確認亮牌並開始</button>
   </div>
 </div>
 
@@ -760,25 +701,28 @@
 <div class="modal-overlay" id="modal-rules">
   <div class="modal-box">
     <h2>經典拱豬規則說明</h2>
-    <p><strong>1. 分牌價值：</strong></p>
+    <p><strong>1. 分牌價值（無亮牌加倍，固定標準計分）：</strong></p>
     <ul>
-      <li>♠Q (豬)：-100 分 (亮牌變 -200)</li>
-      <li>♦J (羊)：+100 分 (亮牌變 +200)</li>
-      <li>♣10 (變壓器)：得分 ×2；單收此牌算 +50 分</li>
-      <li>♥ (紅心計分)：♥2~♥10 依點數扣分（-2至-10分），♥J (-20)、♥Q (-30)、♥K (-40)、♥A (-50)。全套 13 張共 -194 分。</li>
+      <li>♠Q (豬)：固定 -100 分</li>
+      <li>♦J (羊)：固定 +100 分</li>
+      <li>♣10 (變壓器)：本局基礎總分 ×2；若單收此牌且無其他分牌則算 +50 分</li>
+      <li>♥ (紅心)：♥2~♥10 依牌面點數扣 -2 至 -10 分，♥J (-20)、♥Q (-30)、♥K (-40)、♥A (-50)，全套 13 張共計 -194 分。</li>
     </ul>
     <br>
     <p><strong>2. 全紅與【豬羊變色】：</strong></p>
     <ul>
-      <li><strong>全紅</strong>：單一玩家收齊全部 13 張紅心，所有紅心負分全轉正分（+194 分，亮心則 +388 分）。</li>
+      <li><strong>全紅</strong>：單一玩家收齊全部 13 張紅心，紅心負分全轉正分（獨得 +194 分）。</li>
       <li><strong>豬羊變色</strong>：當場上有人達成全紅時，觸發全場正負極性大逆轉：
         <ul>
-          <li>全紅者持有的 <strong>♠Q (豬) 由負轉正</strong>（-100 變 +100 分，亮豬變 +200 分）。</li>
-          <li>其餘單獨吃到 <strong>♦J (羊) 的玩家由正轉負（+100 變 -100 分，亮羊變 -200 分）</strong>！</li>
+          <li>全紅者持有的 <strong>♠Q (豬) 由負轉正（-100 變 +100 分）</strong>！</li>
+          <li>其餘單獨吃到 <strong>♦J (羊) 的玩家由正轉負（+100 變成 -100 分）</strong>！</li>
         </ul>
       </li>
       <li><strong>豬羊滿圈 (全收大滿貫)</strong>：單一玩家同時獨攬 13 張紅心 + ♠Q + ♦J + ♣10，直接獨得 +1000 分！</li>
     </ul>
+    <br>
+    <p><strong>3. 出牌機制：</strong></p>
+    <p>每輪由首家領出花色，有該花色必須跟出；缺門可任意墊牌。每輪由領出花色中點數最大者贏得該輪全部 4 張牌與下一輪領出權。</p>
     <br>
     <button class="btn-confirm-action" onclick="closeModal('modal-rules')">關閉</button>
   </div>
@@ -948,7 +892,6 @@ function startRound() {
     state.hands[p] = [];
     state.captured[p] = [];
   });
-  state.exposed = { pig: null, sheep: null, trans: null, hearts: null };
   state.trick = {};
   state.leadSuit = null;
   state.tricksCount = 0;
@@ -962,8 +905,10 @@ function startRound() {
   PLAYERS.forEach(p => sortHand(state.hands[p]));
 
   sound.deal();
+  state.currentTurn = PLAYERS[state.dealerIdx % 4];
   updateUI();
-  openExposeModal();
+  showToast('發牌完畢，牌局開始！');
+  setTimeout(nextTurn, 400);
 }
 
 /* =========================================================
@@ -1259,30 +1204,28 @@ function calculateScores() {
   const roundScores = { south: 0, west: 0, north: 0, east: 0 };
   const details = {};
 
-  // 第一階段：先計算各家原始收到的卡牌分值與紅心張數
+  // 第一階段：計算各家原始收到的卡牌分值與紅心張數（無亮牌加倍，固定標準值）
   let allHeartsWinner = null;
   const rawData = {};
 
   PLAYERS.forEach(p => {
     const captured = state.captured[p];
     let pig = 0, sheep = 0, heartScore = 0, heartCount = 0;
-    let hasTrans = false, transMul = 1;
+    let hasTrans = false;
 
     captured.forEach(c => {
       if (c.suit === 'spades' && c.rank === 12) {
-        pig = state.exposed.pig ? -200 : -100;
+        pig = -100;
       }
       if (c.suit === 'diamonds' && c.rank === 11) {
-        sheep = state.exposed.sheep ? 200 : 100;
+        sheep = 100;
       }
       if (c.suit === 'clubs' && c.rank === 10) {
         hasTrans = true;
-        transMul = state.exposed.trans ? 4 : 2;
       }
       if (c.suit === 'hearts') {
         heartCount++;
         let val = (c.rank <= 10) ? -c.rank : (c.rank === 11 ? -20 : (c.rank === 12 ? -30 : (c.rank === 13 ? -40 : -50)));
-        if (state.exposed.hearts) val *= 2;
         heartScore += val;
       }
     });
@@ -1291,28 +1234,27 @@ function calculateScores() {
       allHeartsWinner = p;
     }
 
-    rawData[p] = { pig, sheep, heartScore, heartCount, hasTrans, transMul };
+    rawData[p] = { pig, sheep, heartScore, heartCount, hasTrans };
   });
 
   // 第二階段：判定【豬羊變色】與【豬羊滿圈】
   PLAYERS.forEach(p => {
-    let { pig, sheep, heartScore, heartCount, hasTrans, transMul } = rawData[p];
+    let { pig, sheep, heartScore, heartCount, hasTrans } = rawData[p];
     let isPigFlipped = false;
     let isSheepFlipped = false;
 
     // 當場上有人達成「全紅」（13張紅心全拿）時觸發全場「豬羊變色」：
     if (allHeartsWinner) {
       if (p === allHeartsWinner) {
-        // 1. 全紅玩家：紅心全轉正分
+        // 1. 全紅玩家：紅心全轉正分（+194）
         heartScore = Math.abs(heartScore);
         // 若全紅玩家同時抓到豬，豬也翻轉為正分（-100 變 +100）
         if (pig < 0) {
           pig = Math.abs(pig);
           isPigFlipped = true;
         }
-        // 若全紅玩家抓到羊，羊依然保持正分（只有全收/大滿貫或全紅自留時為正）
       } else {
-        // 2. 其餘單獨吃到方塊J（羊）的玩家：羊變色！由正轉負（+100 變成 -100，亮牌則 -200）
+        // 2. 其餘單獨吃到方塊J（羊）的玩家：羊變色！由正轉負（+100 變成 -100）
         if (sheep > 0) {
           sheep = -sheep;
           isSheepFlipped = true;
@@ -1330,10 +1272,11 @@ function calculateScores() {
       if (p === 'south') state.stats.slams++;
     } else {
       if (hasTrans) {
+        // 變壓器：單收 +50 分；有其他牌則總分 ×2
         if (baseScore === 0) {
-          total = state.exposed.trans ? 100 : 50;
+          total = 50;
         } else {
-          total = baseScore * transMul;
+          total = baseScore * 2;
         }
       } else {
         total = baseScore;
@@ -1341,7 +1284,7 @@ function calculateScores() {
     }
 
     roundScores[p] = total;
-    details[p] = { pig, sheep, heartScore, hasTrans, transMul, isSlam, isPigFlipped, isSheepFlipped, baseScore, total };
+    details[p] = { pig, sheep, heartScore, hasTrans, transMul: hasTrans ? 2 : 1, isSlam, isPigFlipped, isSheepFlipped, baseScore, total };
 
     if (p === 'south') {
       if (pig !== 0) state.stats.pigs++;
@@ -1483,15 +1426,7 @@ function updateUI() {
     const sc = document.getElementById(`score-${p}`);
     if (sc) sc.textContent = state.scores[p];
 
-    const tagContainer = document.getElementById(`tags-${p}`);
-    if (tagContainer) {
-      let t = '';
-      if (state.exposed.pig === p) t += `<span class="tag-pill tag-p">亮豬</span>`;
-      if (state.exposed.sheep === p) t += `<span class="tag-pill tag-s">亮羊</span>`;
-      if (state.exposed.trans === p) t += `<span class="tag-pill tag-t">亮變</span>`;
-      if (state.exposed.hearts === p) t += `<span class="tag-pill tag-h">亮心</span>`;
-      tagContainer.innerHTML = t;
-    }
+    
   });
 
   // Render Full-Size Opponent Cards with Rainbow Star Back!
@@ -1623,7 +1558,6 @@ function openModal(id) { document.getElementById(id).classList.add('open'); }
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
 
 /* Event Bindings */
-document.getElementById('btn-done-expose').onclick = finishExpose;
 
 document.getElementById('btn-diff').onclick = () => {
   state.difficulty = state.difficulty === 'hard' ? 'normal' : 'hard';
