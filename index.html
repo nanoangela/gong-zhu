@@ -596,6 +596,24 @@
     85% { opacity: 1; transform: translate(-50%, 0); }
     100% { opacity: 0; transform: translate(-50%, -10px); }
   }
+
+/* Full-art support for Pig Queen (♠Q) */
+.card-item.premium-pig {
+  background-image: url('pig-q-art.png'), url('pig-q-art.jpg'), url('assets/pig-q-art.png'), url('assets/pig-q-art.jpg') !important;
+  background-size: cover !important;
+  background-position: center !important;
+  border: 1.5px solid #d4af37 !important;
+  box-shadow: 0 0 15px rgba(212, 175, 55, 0.45), 0 4px 12px rgba(0,0,0,0.5) !important;
+}
+.card-item.premium-pig .corner-idx,
+.card-item.premium-pig .card-center-suit,
+.card-item.premium-pig .card-special-badge,
+.card-item.premium-pig .card-material-art,
+.card-item.premium-pig .card-emboss,
+.card-item.premium-pig .card-foil-frame {
+  display: none !important;
+}
+
 </style>
 </head>
 <body>
