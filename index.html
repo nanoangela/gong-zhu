@@ -705,7 +705,7 @@
     <ul>
       <li>♠Q (豬)：固定 -100 分</li>
       <li>♦J (羊)：固定 +100 分</li>
-      <li>♣10 (變壓器)：本局基礎總分 ×2；若單收此牌且無其他分牌則算 +50 分</li>
+      <li>♣10 (變壓器)：基礎總分 ×2。只要吃到任何其他分牌（即便豬與羊剛好抵銷為 0 分），仍作乘倍計算（0 × 2 = 0 分）；只有在<strong>完全沒有吃到任何其他分牌（無豬、無羊、無紅心）</strong>的情況下，單收變壓器才算 +50 分。</li>
       <li>♥ (紅心)：♥2~♥10 依牌面點數扣 -2 至 -10 分，♥J (-20)、♥Q (-30)、♥K (-40)、♥A (-50)，全套 13 張共計 -194 分。</li>
     </ul>
     <br>
@@ -1267,13 +1267,18 @@ function calculateScores() {
     let baseScore = pig + sheep + heartScore;
     let total = 0;
 
+    // 是否持有其他分牌（豬、羊、或任何一張紅心）
+    const hasOtherPointCards = (pig !== 0 || sheep !== 0 || heartCount > 0);
+
     if (isSlam) {
       total = 1000;
       if (p === 'south') state.stats.slams++;
     } else {
       if (hasTrans) {
-        // 變壓器：單收 +50 分；有其他牌則總分 ×2
-        if (baseScore === 0) {
+        // 經典拱豬精確規則：
+        // 只要手中抓到過其他分牌（就算剛好豬 -100 與羊 +100 抵銷為 0 分），變壓器依然是乘倍效果：0 × 2 = 0 分！
+        // 只有在「完全沒有吃到任何其他分牌（無豬、無羊、無紅心）」的情況下，單收變壓器才算 +50 分。
+        if (!hasOtherPointCards) {
           total = 50;
         } else {
           total = baseScore * 2;
@@ -1284,7 +1289,7 @@ function calculateScores() {
     }
 
     roundScores[p] = total;
-    details[p] = { pig, sheep, heartScore, hasTrans, transMul: hasTrans ? 2 : 1, isSlam, isPigFlipped, isSheepFlipped, baseScore, total };
+    details[p] = { pig, sheep, heartScore, heartCount, hasTrans, transMul: hasTrans ? 2 : 1, isSlam, isPigFlipped, isSheepFlipped, baseScore, total };
 
     if (p === 'south') {
       if (pig !== 0) state.stats.pigs++;
@@ -1335,7 +1340,7 @@ function endRoundSettlement() {
         <td>${heartStr}</td>
         <td>${transStr}</td>
         <td class="${d.total>=0?'hl':''}">
-          ${d.hasTrans && d.baseScore !== 0 ? `<span style="font-size:11px;color:#94a3b8;">(${d.baseScore>0?'+':''}${d.baseScore} × ${d.transMul}) = </span>` : ''}
+          ${d.hasTrans && (d.pig !== 0 || d.sheep !== 0 || d.heartCount > 0) ? `<span style="font-size:11px;color:#94a3b8;">(${d.baseScore>0?'+':''}${d.baseScore} × 2) = </span>` : ''}
           ${d.total > 0 ? '+' : ''}${d.total}${slamBadge}
         </td>
         <td style="font-weight:900;">${state.scores[p]}</td>
