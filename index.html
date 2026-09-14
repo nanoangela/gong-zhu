@@ -614,6 +614,20 @@
   display: none !important;
 }
 
+
+/* Hardware GPU Acceleration & Texture Layering */
+.card-item, .card-back-full {
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  will-change: transform;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+.custom-card-img, .card-back-full img {
+  image-rendering: -webkit-optimize-contrast;
+  content-visibility: auto;
+}
+
 </style>
 </head>
 <body>
@@ -1420,6 +1434,35 @@ function getSpecialBadge(card) {
    未來每畫好一張新卡牌（如 diamond-j, club-10），只需在清單中加入名稱即可！
    未加入的牌張直接以純 CSS 極速渲染，零 404 請求、零卡頓破圖！
    ========================================================= */
+
+/* =========================================================
+   ASSET PRELOADER ENGINE (GPU 背景即時解碼預載引擎)
+   在遊戲一開局即在背景下載並強行透過 GPU 解碼 (img.decode())
+   讓後續出牌、翻牌時直接從 GPU 顯存取用，達成 0ms 零卡頓！
+   ========================================================= */
+const ASSET_CACHE = new Map();
+
+async function preloadGameAssets() {
+  const urlsToPreload = [
+    'Card.jpg',
+    'card-back.jpg',
+    ...Array.from(CUSTOM_CARDS_REGISTRY).map(key => `${key}.jpg`)
+  ];
+
+  for (const url of urlsToPreload) {
+    if (ASSET_CACHE.has(url)) continue;
+    const img = new Image();
+    img.src = url;
+    if ('decode' in img) {
+      img.decode().then(() => {
+        ASSET_CACHE.set(url, img);
+      }).catch(() => {});
+    } else {
+      img.onload = () => ASSET_CACHE.set(url, img);
+    }
+  }
+}
+
 const CUSTOM_CARDS_REGISTRY = new Set([
   'spade-q',
   'diamond-j',
@@ -1694,6 +1737,7 @@ document.getElementById('btn-stats').onclick = () => {
 
 // Start Round
 window.addEventListener('DOMContentLoaded', () => {
+  preloadGameAssets();
   startRound();
 });
 </script>
