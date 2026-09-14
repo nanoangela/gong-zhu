@@ -1414,47 +1414,91 @@ function getSpecialBadge(card) {
   return '';
 }
 
+function getSuitSingular(suit) {
+  if (suit === 'spades') return 'spade';
+  if (suit === 'hearts') return 'heart';
+  if (suit === 'diamonds') return 'diamond';
+  if (suit === 'clubs') return 'club';
+  return suit;
+}
+
+function getRankCode(rank) {
+  if (rank === 11) return 'j';
+  if (rank === 12) return 'q';
+  if (rank === 13) return 'k';
+  if (rank === 14) return 'a';
+  return String(rank);
+}
+
 function renderCardFaceHTML(card) {
-  const isPig = card.suit === 'spades' && card.rank === 12;
-  
-  if (isPig) {
-    return `
-      <div class="card-item spades premium-pig" data-id="${card.id}" style="padding:0; overflow:hidden; border:1.5px solid #d4af37; box-shadow:0 0 16px rgba(212,175,55,0.6);">
-        <img class="pig-art-img" 
-             src="pig-q-art.jpg" 
-             alt="黑桃Q 豬"
-             onerror="if(!this.dataset.t1){this.dataset.t1='1';this.src='pig-q-art.png';}else if(!this.dataset.t2){this.dataset.t2='1';this.src='assets/pig-q-art.jpg';}else if(!this.dataset.t3){this.dataset.t3='1';this.src='assets/pig-q-art.png';}else{this.style.display='none';this.nextElementSibling.style.display='flex';}"
-             style="width:100%; height:100%; object-fit:cover; display:block; border-radius:inherit; pointer-events:none;" />
-        <div class="fallback-pig-face" style="display:none; width:100%; height:100%; flex-direction:column; justify-content:space-between; padding:6px 8px;">
-          <div class="corner-idx top"><div class="idx-rank">Q</div><div class="idx-suit">♠</div></div>
-          <div class="card-center-suit">♠</div>
-          <div class="card-special-badge badge-pig-c">豬 -100</div>
-          <div class="corner-idx bottom"><div class="idx-rank">Q</div><div class="idx-suit">♠</div></div>
-        </div>
-      </div>
-    `;
-  }
+  const s = getSuitSingular(card.suit);
+  const r = getRankCode(card.rank);
+  const isPig = (card.suit === 'spades' && card.rank === 12);
+  const primarySrc = isPig ? 'spade-q.jpg' : `${s}-${r}.jpg`;
 
   return `
-    <div class="card-item ${card.suit}" data-id="${card.id}">
-      <div class="corner-idx top">
-        <div class="idx-rank">${card.name}</div>
-        <div class="idx-suit">${card.symbol}</div>
-      </div>
-      <div class="card-center-suit">${card.symbol}</div>
-      ${getSpecialBadge(card)}
-      <div class="corner-idx bottom">
-        <div class="idx-rank">${card.name}</div>
-        <div class="idx-suit">${card.symbol}</div>
+    <div class="card-item ${card.suit}" data-id="${card.id}" style="padding:0; overflow:hidden;">
+      <img class="custom-card-img" 
+           src="${primarySrc}" 
+           alt="${card.suit} ${card.name}"
+           data-s="${s}"
+           data-r="${r}"
+           onerror="handleCardImgError(this)"
+           style="width:100%; height:100%; object-fit:cover; display:block; border-radius:inherit; pointer-events:none;" />
+      <div class="default-card-face" style="display:none; width:100%; height:100%; flex-direction:column; justify-content:space-between; padding:6px 8px; position:absolute; inset:0; background:#ffffff; border-radius:inherit;">
+        <div class="corner-idx top">
+          <div class="idx-rank">${card.name}</div>
+          <div class="idx-suit">${card.symbol}</div>
+        </div>
+        <div class="card-center-suit">${card.symbol}</div>
+        ${getSpecialBadge(card)}
+        <div class="corner-idx bottom">
+          <div class="idx-rank">${card.name}</div>
+          <div class="idx-suit">${card.symbol}</div>
+        </div>
       </div>
     </div>
   `;
 }
 
+function handleCardImgError(img) {
+  const s = img.dataset.s;
+  const r = img.dataset.r;
+  const step = parseInt(img.dataset.step || '0', 10);
+
+  if (step === 0) {
+    img.dataset.step = '1';
+    img.src = `${s}-${r}.png`;
+  } else if (step === 1 && s === 'spade' && r === 'q') {
+    img.dataset.step = '2';
+    img.src = 'pig-q-art.jpg';
+  } else if (step === 2 && s === 'spade' && r === 'q') {
+    img.dataset.step = '3';
+    img.src = 'pig-q-art.png';
+  } else if (step <= 3) {
+    img.dataset.step = '4';
+    img.src = `assets/${s}-${r}.jpg`;
+  } else if (step === 4) {
+    img.dataset.step = '5';
+    img.src = `assets/${s}-${r}.png`;
+  } else {
+    // No custom art found -> show crisp default CSS card face
+    img.style.display = 'none';
+    const fallback = img.nextElementSibling;
+    if (fallback) fallback.style.display = 'flex';
+  }
+}
+
 function renderCardBackHTML() {
   return `
-    <div class="card-back-full">
-      ${RAINBOW_STAR_SVG}
+    <div class="card-back-full" style="overflow:hidden; padding:0; background:#08101e;">
+      <img src="card-back.jpg" 
+           alt="牌背"
+           onerror="if(!this.dataset.t1){this.dataset.t1='1';this.src='Card.jpg';}else if(!this.dataset.t2){this.dataset.t2='1';this.src='card.jpg';}else if(!this.dataset.t3){this.dataset.t3='1';this.src='card-back.png';}else if(!this.dataset.t4){this.dataset.t4='1';this.src='Card.png';}else if(!this.dataset.t5){this.dataset.t5='1';this.src='assets/card-back.jpg';}else{this.style.display='none';this.nextElementSibling.style.display='flex';}"
+           style="width:100%; height:100%; object-fit:cover; display:block; border-radius:inherit; pointer-events:none;" />
+      <div class="fallback-back-svg" style="display:none; width:100%; height:100%; align-items:center; justify-content:center;">
+        ${RAINBOW_STAR_SVG}
+      </div>
     </div>
   `;
 }
