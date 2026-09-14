@@ -1414,6 +1414,16 @@ function getSpecialBadge(card) {
   return '';
 }
 
+/* =========================================================
+   CUSTOM CARD ART REGISTRY (高效防延遲載入引擎)
+   目前已啟用的自訂卡面：黑桃Q ('spade-q')
+   未來每畫好一張新卡牌（如 diamond-j, club-10），只需在清單中加入名稱即可！
+   未加入的牌張直接以純 CSS 極速渲染，零 404 請求、零卡頓破圖！
+   ========================================================= */
+const CUSTOM_CARDS_REGISTRY = new Set([
+  'spade-q'
+]);
+
 function getSuitSingular(suit) {
   if (suit === 'spades') return 'spade';
   if (suit === 'hearts') return 'heart';
@@ -1433,68 +1443,46 @@ function getRankCode(rank) {
 function renderCardFaceHTML(card) {
   const s = getSuitSingular(card.suit);
   const r = getRankCode(card.rank);
-  const isPig = (card.suit === 'spades' && card.rank === 12);
-  const primarySrc = isPig ? 'spade-q.jpg' : `${s}-${r}.jpg`;
+  const cardKey = `${s}-${r}`;
 
+  // 如果這張牌有自訂原畫（例如 spade-q）
+  if (CUSTOM_CARDS_REGISTRY.has(cardKey)) {
+    return `
+      <div class="card-item ${card.suit}" data-id="${card.id}" style="padding:0; overflow:hidden; border:1.5px solid #d4af37; box-shadow:0 0 16px rgba(212,175,55,0.6);">
+        <img src="spade-q.jpg" 
+             alt=""
+             onerror="if(!this.dataset.tried){this.dataset.tried='1';this.src='pig-q-art.jpg';}"
+             style="width:100%; height:100%; object-fit:cover; display:block; border-radius:inherit; pointer-events:none;" />
+      </div>
+    `;
+  }
+
+  // 其餘 51 張尚未繪製的牌：直接輸出清晰原生的向量卡面（瞬間載入、零延遲、絕不破圖）
   return `
-    <div class="card-item ${card.suit}" data-id="${card.id}" style="padding:0; overflow:hidden;">
-      <img class="custom-card-img" 
-           src="${primarySrc}" 
-           alt="${card.suit} ${card.name}"
-           data-s="${s}"
-           data-r="${r}"
-           onerror="handleCardImgError(this)"
-           style="width:100%; height:100%; object-fit:cover; display:block; border-radius:inherit; pointer-events:none;" />
-      <div class="default-card-face" style="display:none; width:100%; height:100%; flex-direction:column; justify-content:space-between; padding:6px 8px; position:absolute; inset:0; background:#ffffff; border-radius:inherit;">
-        <div class="corner-idx top">
-          <div class="idx-rank">${card.name}</div>
-          <div class="idx-suit">${card.symbol}</div>
-        </div>
-        <div class="card-center-suit">${card.symbol}</div>
-        ${getSpecialBadge(card)}
-        <div class="corner-idx bottom">
-          <div class="idx-rank">${card.name}</div>
-          <div class="idx-suit">${card.symbol}</div>
-        </div>
+    <div class="card-item ${card.suit}" data-id="${card.id}">
+      <div class="corner-idx top">
+        <div class="idx-rank">${card.name}</div>
+        <div class="idx-suit">${card.symbol}</div>
+      </div>
+      <div class="card-center-suit">${card.symbol}</div>
+      ${getSpecialBadge(card)}
+      <div class="corner-idx bottom">
+        <div class="idx-rank">${card.name}</div>
+        <div class="idx-suit">${card.symbol}</div>
       </div>
     </div>
   `;
 }
 
-function handleCardImgError(img) {
-  const s = img.dataset.s;
-  const r = img.dataset.r;
-  const step = parseInt(img.dataset.step || '0', 10);
-
-  if (step === 0) {
-    img.dataset.step = '1';
-    img.src = `${s}-${r}.png`;
-  } else if (step === 1 && s === 'spade' && r === 'q') {
-    img.dataset.step = '2';
-    img.src = 'pig-q-art.jpg';
-  } else if (step === 2 && s === 'spade' && r === 'q') {
-    img.dataset.step = '3';
-    img.src = 'pig-q-art.png';
-  } else if (step <= 3) {
-    img.dataset.step = '4';
-    img.src = `assets/${s}-${r}.jpg`;
-  } else if (step === 4) {
-    img.dataset.step = '5';
-    img.src = `assets/${s}-${r}.png`;
-  } else {
-    // No custom art found -> show crisp default CSS card face
-    img.style.display = 'none';
-    const fallback = img.nextElementSibling;
-    if (fallback) fallback.style.display = 'flex';
-  }
-}
+// 牌背全域快取狀態
+let cardBackSrc = 'Card.jpg';
 
 function renderCardBackHTML() {
   return `
     <div class="card-back-full" style="overflow:hidden; padding:0; background:#08101e;">
-      <img src="card-back.jpg" 
-           alt="牌背"
-           onerror="if(!this.dataset.t1){this.dataset.t1='1';this.src='Card.jpg';}else if(!this.dataset.t2){this.dataset.t2='1';this.src='card.jpg';}else if(!this.dataset.t3){this.dataset.t3='1';this.src='card-back.png';}else if(!this.dataset.t4){this.dataset.t4='1';this.src='Card.png';}else if(!this.dataset.t5){this.dataset.t5='1';this.src='assets/card-back.jpg';}else{this.style.display='none';this.nextElementSibling.style.display='flex';}"
+      <img src="${cardBackSrc}" 
+           alt=""
+           onerror="if(!this.dataset.t){this.dataset.t='1';this.src='card-back.jpg';cardBackSrc='card-back.jpg';}else{this.style.display='none';this.nextElementSibling.style.display='flex';}"
            style="width:100%; height:100%; object-fit:cover; display:block; border-radius:inherit; pointer-events:none;" />
       <div class="fallback-back-svg" style="display:none; width:100%; height:100%; align-items:center; justify-content:center;">
         ${RAINBOW_STAR_SVG}
