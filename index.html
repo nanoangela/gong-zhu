@@ -4,6 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>經典拱豬 (Gong Zhu) - iPad 典藏旗艦版</title>
+<!-- 最高優先級瀏覽器原生圖片預載 -->
+<link rel="preload" as="image" href="background.jpg" fetchpriority="high">
+<link rel="preload" as="image" href="Card.jpg">
 <style>
   :root {
     --table-green: radial-gradient(circle at center, #15803d 0%, #14532d 55%, #052e16 100%);
@@ -127,8 +130,8 @@
   #table-arena {
     flex: 1;
     position: relative;
-    background-color: #02200d;
-    background-image: url('background.jpg'), url('assets/background.jpg'), var(--table-green);
+    background-color: #081a10;
+    background-image: url('background.jpg'), url('assets/background.jpg');
     background-position: center center;
     background-size: cover;
     background-repeat: no-repeat;
@@ -651,6 +654,8 @@
   </header>
 
   <div id="table-arena">
+    <!-- 奢華牌桌淡入遮罩（防止首針白屏或舊背景閃爍） -->
+    <div id="table-curtain" style="position:absolute; inset:0; background:#05120a; z-index:95; transition:opacity 0.4s ease; pointer-events:none;"></div>
     <!-- North Seat (Computer North) -->
     <div class="seat-container" id="seat-north">
       <div class="seat-info-pill">
@@ -1742,6 +1747,25 @@ document.getElementById('btn-stats').onclick = () => {
 
 // Start Round
 window.addEventListener('DOMContentLoaded', () => {
+
+  // 牌桌圖片就緒後，平滑揭幕
+  const bgImg = new Image();
+  bgImg.src = 'background.jpg';
+  const revealTable = () => {
+    const curtain = document.getElementById('table-curtain');
+    if (curtain) {
+      curtain.style.opacity = '0';
+      setTimeout(() => curtain.remove(), 450);
+    }
+  };
+  if (bgImg.complete) {
+    revealTable();
+  } else {
+    bgImg.onload = revealTable;
+    bgImg.onerror = revealTable;
+    setTimeout(revealTable, 500); // 兜底超時
+  }
+
   preloadGameAssets();
   startRound();
 });
